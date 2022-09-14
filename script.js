@@ -23,7 +23,13 @@ function editBtn(ele) {
 }
 //HANDLING DELETE BTN
 function deleteBtn(ele) {
-    ele.parentElement.parentElement.parentElement.remove();
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    var taskToRemove = ele.parentElement.parentElement.parentElement;
+    var id = taskToRemove.parentElement.querySelector(".task-id").innerHTML.split(" ")[1];
+    var tableName = taskToRemove.parentElement.getAttribute("class").split(" ")[0];
+    deleteOnServer(tableName, id);
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    taskToRemove.remove();
 }
 //TRACKING TASK FOR EDITING AND UPDATING
 var trackingTask = "";
@@ -36,6 +42,14 @@ function createTask(modalData) {
     //ADDING HOLDING AND UNHOLDING EVENTS IN NEWTASK
     newTask.addEventListener("dragstart", (e) => {
         holdingItem = e.target;
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        holdingData["id"] = holdingItem.querySelector(".task-id").innerHTML.split(" ")[1];
+        holdingData["name"] = holdingItem.querySelector(".name").innerHTML;
+        holdingData["deadline"] = holdingItem.querySelector(".deadline").innerHTML;
+        holdingData["assignee"] = holdingItem.querySelector(".assignee").innerHTML;
+        holdingData["description"] = holdingItem.querySelector(".description").innerHTML;
+        deleteOnServer(holdingItem.parentElement.getAttribute("class").split(" ")[0], holdingData["id"])
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         e.target.classList.add("hold");
         setTimeout(() => {
             e.target.classList.add("unhold");
@@ -50,24 +64,25 @@ function createTask(modalData) {
 
     newTask.innerHTML = `
     <div class='task-bar'>
-        <p class='task-id'>#TaskId: `+ taskId + `</p>
+        <p class='task-id'>#TaskId: ${modalData.id}</p>
         <p class='task-btns'>
-            <img src='img/edit.png' onclick='editBtn(this)' id='edit-icon'>
-            <img src='img/bin.png' onclick='deleteBtn(this)' id ='delete-icon'>
+            <img src='/img/edit.png' onclick='editBtn(this)' id='edit-icon'>
+            <img src='/img/bin.png' onclick='deleteBtn(this)' id ='delete-icon'>
         </p> 
     </div>
-    <p class='name'>`+ modalData.name + `</p>
-    <p class='description'>`+ modalData.description + `<p>
+    <p class='name'>${modalData.name}</p>
+    <p class='description'>${modalData.description}<p>
     <p class='displayFlex'>
-        <span class='assignee'>`+ modalData.assignee + `</span>
-        <span class='deadline'>`+ modalData.deadline + `</span>
+        <span class='assignee'>${modalData.assignee}</span>
+        <span class='deadline'>${modalData.deadline}</span>
     </p>
     `;
     changeId();
     return newTask;
 }
-//TRACKING WHICK TASK IS IN HOLD
+//TRACKING WHICH TASK IS IN HOLD
 var holdingItem = "";
+var holdingData = {};
 //DRAG EVENTS ON CARDS
 var cards = document.getElementsByClassName("card");
 for (cardItem of cards) {
@@ -76,6 +91,9 @@ for (cardItem of cards) {
     });
     cardItem.addEventListener("drop", (e) => {
         e.target.append(holdingItem);
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////
+        createOnServer(holdingData, e.target.getAttribute("class").split(" ")[0]);
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////
     });
 };
 //HANDLING MODAL FORM ADD TASK BUTTON
@@ -97,6 +115,7 @@ function createModalDataObject() {
     var description = document.getElementById("task-description").value;
 
     var modalData = {};
+    modalData["id"] = taskId;
     modalData["name"] = name;
     modalData["deadline"] = deadline; closeBtn
     modalData["assignee"] = assignee;
@@ -109,7 +128,9 @@ function addBtn() {
     var modalData = createModalDataObject();
     var newTask = createTask(modalData);
     document.querySelector(".todo").append(newTask);
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    createOnServer(modalData, "todo");
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     closeBtn();
 }
 //MODAL SAVE BTN
@@ -132,86 +153,57 @@ function closeBtn() {
     document.querySelector(".modal-bg").classList.remove("view-modal");
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//HANDLING DATA ON SERVER
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-// AJAX CALLS AND SAVING DATA IN LOCAL STORAGE
-
-// LOADING DATA FROM LOCAL AND ADDING IN DOM
-// window.onload = function showTasks() {
-//     var todoData = JSON.parse(localStorage.getItem("todo"));
-//     var backlogsData = JSON.parse(localStorage.getItem("backlogs"));
-//     var progressData = JSON.parse(localStorage.getItem("progress"));
-//     var testingData = JSON.parse(localStorage.getItem("testing"));
-//     var doneData = JSON.parse(localStorage.getItem("done"));
-
-//     if (todoData != null && Object.keys(todoData).length != 0) loadTasksList(todoData, "backlogs");
-//     if (backlogsData != null && Object.keys(backlogsData).length != 0) loadTasksList(backlogsData, "progress");
-//     if (progressData != null && Object.keys(progressData).length != 0) loadTasksList(progressData, "testing");
-//     if (testingData != null && Object.keys(testingData).length != 0) loadTasksList(testingData, "done");
-//     if (doneData != null && Object.keys(doneData).length != 0) loadTasksList(doneData, "done");
-
-// }
-// function loadTasksList(localData, taskListName) {
-
-//     for (k of Object.keys(localData)) {
-//         console.log();
-//         createTask(localData, taskListName, k);
-//     }
-// }
-// // SAVING MODAL DATA TO LOCAL
-// function saveToLocal(modalData, whereToAdd, taskId) {
-//     var localData = JSON.parse(localStorage.getItem(whereToAdd));
-//     if (localData == null) {
-//         localData = {};
-//     }
-//     localData[taskId] = modalData;
-//     localStorage.setItem(whereToAdd, JSON.stringify(localData));
-// }
-//SAVING DATA TO SERVER USING AJAX
-// sample modal data
-// modalData = {
-//     taskId : {
-//         "name": "Create kanban board",
-//         "deadine": "11/12/22",
-//         "assignee": "john doe",
-//         "description": "1. create tasks, 2. create todo list"
-//     }
-// }
-// whereToAdd = todo, backlogs, progress, testing, done
-// function saveToServer(modalData, whereToAdd, taskId) {
-//     var localData = {};
-//     //GETTING DATA TO SERVER
-//     var xhrLocal = new XMLHttpRequest();
-//     xhrLocal.open("GET", whereToAdd + ".txt", true);
-//     xhrLocal.send();
-//     xhrLocal.onload = () => {
-//         if (this.readyState == 4 && this.status == 200) {
-//             localData = JSON.parse(this.responseText);
-//             // console.log(localData)
-//             alert("Success!");
-//         } else {
-//             alert("Some error occured!");
-//         }
-//     }
-
-//     localData[taskId] = modalData;
-//     // console.log(localData)
-//     //SENDING DATA TO SERVER
-//     var xhr = new XMLHttpRequest();
-//     xhr.open("post", whereToAdd + ".txt", true);
-//     xhr.send(JSON.stringify(localData));
-
-//     xhr.setRequestHeader('Content-type', 'application/json; charset=UTF-8');
-
-// }
-
-//HANDLING TASK DELETE BTN
-// var isEditingModal = false;
-// var editingTask = "";
-
-// DELETING TASK OF GIVEN ID FROM LOCAL STORAGE
-// function deleteInLocal(idDelete, taskListName) {
-//     var localData = JSON.parse(localStorage.getItem(taskListName));
-//     delete localData[idDelete];
-//     localStorage.setItem(taskListName, JSON.stringify(localData));
-// }
+//LOADING ALL TASK FROM SERVER ON DOCUMENT LOAD
+loadData();
+function loadData() {
+    loadFromServer("todo");
+    loadFromServer("backlogs");
+    loadFromServer("progress");
+    loadFromServer("testing");
+    loadFromServer("done");
+}
+function loadFromServer(tableName) {
+    url = "https://sheetdb.io/api/v1/aagqonwp9i71p?sheet="+tableName;
+    fetch(url).then(res => {
+        return res.json();
+    }).then(data => {
+        data.forEach(element => {
+            document.querySelector("."+tableName).append(createTask(element));            
+        });
+    })
+}
+//CREATING NEWTASK ON SERVER
+function createOnServer(modalData, tableName) {
+    url = "https://sheetdb.io/api/v1/aagqonwp9i71p?sheet="+tableName;
+    params = {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(modalData)
+    }
+    fetch(url, params).then(res => {
+        return res.json();
+    }).then(data => {
+        console.log(data);
+    })
+}
+//DELETING ON SERVER
+function deleteOnServer(tableName, id) {
+    url = "https://sheetdb.io/api/v1/aagqonwp9i71p/id/"+id+"?sheet="+tableName;
+    params = {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "apllication/json"
+        }
+    }
+    fetch(url, params).then(res => {
+        return res.json();
+    }).then(data => {
+        console.log(data);
+    })
+}
