@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="style.css">
+    <title>Kanban Board</title>
+</head>
+
+<body>
+    <header>
+        Kanban Board
+    </header>
+    <main>
+        <!-- MODAL -->
+        <div class="modal-bg">
+            <div class="my-modal">
+                <form action="">
+                    <h3 class="form-heading">Add Task</h3>
+                    <input id="task-name" type="text" placeholder="Task name" required>
+                    <input id="task-deadline" type="date" placeholder="Deadline" required>
+                    <input id="task-assignee" type="text" placeholder="Assignee" required>
+                    <textarea id="task-description" name="description" cols="30" rows="5" placeholder="Description"
+                        required></textarea>
+                    <div class="modal-actions">
+                        <button class="add-btn" onclick="addBtn()">Add</button>
+                        <button class="save-btn" onclick="saveBtn()">Save</button>
+                        <button class="close-btn" onclick="closeBtn()">Close</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="add">
+            <button id="add-task-btn" onclick='openModalForAdd()'>Add Task</button>
+        </div>
+        <div class="kanban-board">
+            <div class="todo card">
+                <h3>Todo</h3>
+            </div>
+            <div class="backlogs card">
+                <h3>Backlogs</h4>
+            </div>
+            <div class="progress card">
+                <h3>In Progress</h3>
+            </div>
+            <div class="testing card">
+                <h3>In Testing</h4>
+            </div>
+            <div class="done card">
+                <h3>Done</h4>
+            </div>
+        </div>
+    </main>
+    <footer>
+
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
