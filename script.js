@@ -66,8 +66,8 @@ function createTask(modalData) {
     <div class='task-bar'>
         <p class='task-id'>#TaskId: ${modalData.id}</p>
         <p class='task-btns'>
-            <img src='/img/edit.png' onclick='editBtn(this)' id='edit-icon'>
-            <img src='/img/bin.png' onclick='deleteBtn(this)' id ='delete-icon'>
+            <img src='img/edit.png' onclick='editBtn(this)' id='edit-icon'>
+            <img src='img/bin.png' onclick='deleteBtn(this)' id ='delete-icon'>
         </p> 
     </div>
     <p class='name'>${modalData.name}</p>
